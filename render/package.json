@@ -1,0 +1,17 @@
+{
+  "name": "render",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "description": "p5.brush render pipeline: sketch code -> PNG (headless Chrome)",
+  "main": "render.js",
+  "scripts": {
+    "test": "node --test",
+    "render": "node render.js"
+  },
+  "dependencies": {
+    "p5": "^2.3.2",
+    "p5.brush": "^2.2.2",
+    "puppeteer": "^25.9.0"
+  }
+}

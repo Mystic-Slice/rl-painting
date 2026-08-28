@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+  html, body { margin: 0; padding: 0; background: #ffffff; }
+  /* p5 appends the canvas to <body>; keep it flush at the top-left */
+  #sketch-holder { position: absolute; top: 0; left: 0; }
+  canvas { display: block; }
+</style>
+<!-- Vendored, pinned libraries: p5 build of p5.brush requires p5.js 2.x -->
+<script src="__P5__"></script>
+<script src="__P5BRUSH__"></script>
+</head>
+<body>
+<div id="sketch-holder"></div>
+<script>
+// ---- Render harness -------------------------------------------------------
+// The model's sketch defines globals setup()/draw() and (should) call noLoop().
+// We wrap draw() so that after the FIRST completed frame we flip a done flag
+// that the Node driver polls before screenshotting. Any error thrown while the
+// sketch loads or draws is captured on window.__renderError instead of crashing.
+window.__renderDone = false;
+window.__renderError = null;
+
+window.addEventListener('error', function (e) {
+  if (!window.__renderError) {
+    window.__renderError = (e && e.error && e.error.stack) ? e.error.stack
+                          : (e && e.message) ? e.message : String(e);
+  }
+});
+window.addEventListener('unhandledrejection', function (e) {
+  if (!window.__renderError) {
+    window.__renderError = 'unhandledrejection: ' +
+      ((e && e.reason && e.reason.stack) ? e.reason.stack : String(e && e.reason));
+  }
+});
+</script>
+<!-- INJECTED SKETCH CODE GOES BELOW -->
+<script id="user-sketch">
+__SKETCH__
+</script>
+<script>
+// Wrap draw() AFTER the user script has defined it, BEFORE p5 auto-starts.
+// p5 2.x global mode boots on window 'load'; this inline script runs first.
+(function () {
+  try {
+    if (typeof window.draw === 'function') {
+      var _userDraw = window.draw;
+      window.draw = function () {
+        _userDraw.apply(this, arguments);
+        window.__renderDone = true;   // one frame painted successfully
+      };
+    } else if (!window.__renderError) {
+      window.__renderError = 'Sketch did not define a global draw() function.';
+    }
+    if (typeof window.setup !== 'function' && !window.__renderError) {
+      window.__renderError = 'Sketch did not define a global setup() function.';
+    }
+  } catch (err) {
+    window.__renderError = (err && err.stack) ? err.stack : String(err);
+  }
+})();
+</script>
+</body>
+</html>
