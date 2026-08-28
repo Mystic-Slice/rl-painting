@@ -1,0 +1,45 @@
+{
+  "_comment": "Fixed dataset: 10 watercolour-friendly animals x 3 simple scenes each (30 combos). The single-prompt smoke test uses koi_pond_sunny. Edit freely.",
+  "animals": ["koi fish", "jellyfish", "red fox", "hummingbird", "butterfly", "peacock", "bear", "owl", "deer", "tiger"],
+  "combos": [
+    { "id": "koi_pond_sunny",         "animal": "koi fish",    "prompt": "koi fish in a small pond on a sunny day" },
+    { "id": "koi_lotus",              "animal": "koi fish",    "prompt": "koi fish gliding beneath floating lotus leaves" },
+    { "id": "koi_autumn_maple",       "animal": "koi fish",    "prompt": "koi fish drifting under falling red maple leaves" },
+
+    { "id": "jelly_deep_blue",        "animal": "jellyfish",   "prompt": "a jellyfish drifting in deep blue water" },
+    { "id": "jelly_glow_dark",        "animal": "jellyfish",   "prompt": "a glowing jellyfish in a dark moonlit ocean" },
+    { "id": "jelly_sunlit_shallows",  "animal": "jellyfish",   "prompt": "a translucent jellyfish in sunlit turquoise shallows" },
+
+    { "id": "fox_autumn_leaves",      "animal": "red fox",     "prompt": "a red fox curled up among autumn leaves" },
+    { "id": "fox_snowy_forest",       "animal": "red fox",     "prompt": "a red fox standing in a quiet snowy forest" },
+    { "id": "fox_misty_meadow",       "animal": "red fox",     "prompt": "a red fox stepping through a misty morning meadow" },
+
+    { "id": "hummingbird_flowers",    "animal": "hummingbird", "prompt": "a hummingbird hovering by pink flowers" },
+    { "id": "hummingbird_dawn",       "animal": "hummingbird", "prompt": "a hummingbird at a trumpet vine at dawn" },
+    { "id": "hummingbird_rain",       "animal": "hummingbird", "prompt": "a hummingbird sheltering under a broad leaf in light rain" },
+
+    { "id": "butterfly_thistle",      "animal": "butterfly",   "prompt": "a butterfly resting on a purple thistle" },
+    { "id": "butterfly_meadow",       "animal": "butterfly",   "prompt": "a butterfly over a sunlit summer meadow" },
+    { "id": "butterfly_lavender",     "animal": "butterfly",   "prompt": "a butterfly drifting over a field of lavender" },
+
+    { "id": "peacock_display",        "animal": "peacock",     "prompt": "a peacock displaying its tail feathers in a garden" },
+    { "id": "peacock_wall",           "animal": "peacock",     "prompt": "a peacock perched on an old garden wall at dusk" },
+    { "id": "peacock_rain",           "animal": "peacock",     "prompt": "a peacock with glistening feathers in soft monsoon rain" },
+
+    { "id": "bear_river_salmon",      "animal": "bear",        "prompt": "a brown bear fishing in a rushing river" },
+    { "id": "bear_pine_forest",       "animal": "bear",        "prompt": "a brown bear ambling through a misty pine forest" },
+    { "id": "bear_autumn_berries",    "animal": "bear",        "prompt": "a bear foraging among autumn berry bushes" },
+
+    { "id": "owl_moonlit_branch",     "animal": "owl",         "prompt": "an owl perched on a bare branch under a full moon" },
+    { "id": "owl_snowy_pine",         "animal": "owl",         "prompt": "a snowy owl resting in a frosted pine tree" },
+    { "id": "owl_autumn_dusk",        "animal": "owl",         "prompt": "an owl on an oak bough at autumn dusk" },
+
+    { "id": "deer_misty_forest",      "animal": "deer",        "prompt": "a deer standing in a misty pine forest at dawn" },
+    { "id": "deer_autumn_clearing",   "animal": "deer",        "prompt": "a deer in a golden autumn clearing" },
+    { "id": "deer_snowfall",          "animal": "deer",        "prompt": "a deer in gentle falling snow" },
+
+    { "id": "tiger_jungle",           "animal": "tiger",       "prompt": "a tiger prowling through dense green jungle" },
+    { "id": "tiger_river",            "animal": "tiger",       "prompt": "a tiger wading across a shallow river" },
+    { "id": "tiger_tall_grass",       "animal": "tiger",       "prompt": "a tiger half-hidden in tall golden grass" }
+  ]
+}

@@ -1,0 +1,8 @@
+datagen/out
+datagen/out_refine
+datagen/promptopt/runs
+datagen/promptopt/compare
+
+**__pycache__**
+
+.env
