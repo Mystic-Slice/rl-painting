@@ -68,7 +68,7 @@ async def _one_vote(candidate_png: str, reference_png: str, scene_prompt: str,
         {"type": "text", "text": "Image B:"}, img_part(second),
         {"type": "text",
          "text": ("Both are meant to depict: %s.\nWhich is the better watercolour "
-                  "painting of that? Reply A, B, or TIE." % scene_prompt)},
+                  "painting of that? Reply A or B." % scene_prompt)},
     ]
     messages = [{"role": "system", "content": PAIRWISE_SYSTEM},
                 {"role": "user", "content": parts}]
