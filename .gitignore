@@ -6,3 +6,5 @@ datagen/promptopt/compare
 **__pycache__**
 
 .env
+
+runs
