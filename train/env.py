@@ -53,6 +53,7 @@ from tinker_cookbook.utils import logtree  # noqa: E402
 
 from reward.compat import extract_code, load_examples, split_examples, user_prompt_for  # noqa: E402
 from reward.config import RewardConfig  # noqa: E402
+from reward.imgcheck import is_blank  # noqa: E402
 from reward.judge import pairwise_winrate  # noqa: E402
 from reward.refpool import RefPool  # noqa: E402
 from reward.render_bridge import get_render_bridge  # noqa: E402
@@ -82,6 +83,7 @@ class PaintEnv(Env):
         self.out_dir = Path(out_dir)
         # state populated during step():
         self.compiled: bool = False
+        self.blank: bool = False
         self.png_path: str | None = None
         self.n_sampled: int = 0
         self.render_ms: int = 0
@@ -139,8 +141,15 @@ class PaintEnv(Env):
             self.render_error = "no stop sequence" if not format_ok else "empty code"
 
         if self.compiled:
-            step_reward = length_penalty(self.n_sampled, self.cfg)
-            gate = "ok"
+            # Deterministic degeneracy check: a flat/near-uniform render gets
+            # r_blank, is excluded from all judging, and never scores positive.
+            self.blank, _bstats = is_blank(self.png_path, self.cfg.blank_painted_thresh)
+            if self.blank:
+                step_reward = self.cfg.r_blank
+                gate = "blank"
+            else:
+                step_reward = length_penalty(self.n_sampled, self.cfg)
+                gate = "ok"
         else:
             step_reward = self.cfg.r_fail
             gate = "fail"
@@ -149,6 +158,7 @@ class PaintEnv(Env):
 
         metrics: Metrics = {
             "compiled": float(self.compiled),
+            "blank": float(self.blank),
             "n_sampled_tokens": float(self.n_sampled),
             "code_len": float(self.code_len),
             "render_ms": float(self.render_ms),
@@ -210,10 +220,14 @@ class PaintEnvGroupBuilder(EnvGroupBuilder):
     ) -> list[tuple[float, Metrics]]:
         envs = list(env_group)
         cfg = self.reward_cfg
+        # Blank renders are excluded here entirely: no judge spend, no tournament
+        # slot, group reward 0 — their whole reward is the r_blank step reward.
         compiled_idx = [i for i, e in enumerate(envs)
-                        if getattr(e, "compiled", False) and getattr(e, "png_path", None)]
+                        if getattr(e, "compiled", False) and getattr(e, "png_path", None)
+                        and not getattr(e, "blank", False)]
 
-        # No compiled member -> nothing to grade; group reward is 0 (step reward = r_fail).
+        # No gradeable member -> nothing to judge; group reward is 0
+        # (step reward already carries r_fail / r_blank).
         if not compiled_idx:
             return [(0.0, {}) for _ in envs]
 
@@ -363,13 +377,14 @@ class PaintRLDatasetBuilder(RLDatasetBuilder):
     judge_model: str = "qwen/qwen3-vl-32b-instruct"
     judge_retries: int = 2
     w_aesth: float = 0.35
-    w_pair: float = 0.45
+    w_pair: float = 0.15
     w_len: float = 0.30
     len_free_tokens: int = 6000
     r_fail: float = -0.3
+    r_blank: float = -0.1
     render_timeout_ms: int = 45000
     tournament: bool = False
-    w_tour: float = 0.20
+    w_tour: float = 0.30
     tournament_k: int = 2
 
     refpool_root: str = DEFAULT_REFPOOL
@@ -378,6 +393,7 @@ class PaintRLDatasetBuilder(RLDatasetBuilder):
     def _reward_cfg(self) -> RewardConfig:
         return RewardConfig(
             r_fail=self.r_fail,
+            r_blank=self.r_blank,
             w_aesth=self.w_aesth,
             w_pair=self.w_pair,
             w_len=self.w_len,

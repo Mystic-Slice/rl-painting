@@ -68,15 +68,26 @@ async def main():
         print("   !! expected gate fail with r_fail")
         ok_all = False
 
-    # compute_group_rewards over the two envs (null scorer, pairwise off)
+    # the good render must not trip the blank-image gate
+    print("[blank gate] good render blank=%s" % env.blank)
+    if env.blank:
+        print("   !! good sketch flagged as blank")
+        ok_all = False
+
+    # a blank env (flat render) must be excluded from judging: group reward (0.0, {})
+    env_blank = PaintEnv(renderer, COMBO, SYS, cfg, str(OUT))
+    env_blank.compiled, env_blank.blank, env_blank.png_path = True, True, env.png_path
+
+    # compute_group_rewards over the three envs (null scorer, pairwise off)
     builder = PaintEnvGroupBuilder(
         renderer=renderer, combo=COMBO, system_prompt=SYS, reward_cfg=cfg,
-        group_size=2, out_dir=str(OUT), refpool_root=str(ROOT / "refpool"), seed=0,
+        group_size=3, out_dir=str(OUT), refpool_root=str(ROOT / "refpool"), seed=0,
     )
-    rewards = await builder.compute_group_rewards([None, None], [env, env_bad])
+    rewards = await builder.compute_group_rewards([None] * 3, [env, env_bad, env_blank])
     print("[group rewards] %s" % rewards)
-    # compiled env should get w_aesth*0.5=0.175; failed env gets (0.0, {})
-    if abs(rewards[0][0] - cfg.w_aesth * 0.5) > 1e-6 or rewards[1] != (0.0, {}):
+    # compiled env gets w_aesth*0.5; failed AND blank envs get (0.0, {})
+    if (abs(rewards[0][0] - cfg.w_aesth * 0.5) > 1e-6
+            or rewards[1] != (0.0, {}) or rewards[2] != (0.0, {})):
         print("   !! unexpected group rewards")
         ok_all = False
 

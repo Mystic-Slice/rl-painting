@@ -17,10 +17,18 @@ class RewardConfig:
     # signal the way -1.0 did (which trained a blank-canvas policy).
     r_fail: float = -0.3            # reward for compile/format/render failure
 
+    # Blank-image gate: a render that is a flat shade / near-uniform wash (see
+    # reward/imgcheck.py) gets r_blank and is excluded from all judging — worse
+    # than any real attempt, better than not compiling, never positive.
+    r_blank: float = -0.1
+    blank_painted_thresh: float = 0.02  # min fraction of canvas painted over the bg colour
+
     # --- component weights (success case) ----------------------------------
     # Independent weights, one per term (no implicit coupling between them).
     w_aesth: float = 0.35           # single holistic VLM quality judge (0..1)
-    w_pair: float = 0.45            # pairwise winrate vs reference pool (0..1)
+    # Refpool winrate was 0.000 for the whole of run 2 (references unreachably
+    # strong early on) — kept small until the policy can actually score wins.
+    w_pair: float = 0.15            # pairwise winrate vs reference pool (0..1)
     w_len: float = 0.30             # max magnitude of the length penalty (<=0)
 
     # --- length shaping ----------------------------------------------------
@@ -43,7 +51,7 @@ class RewardConfig:
     # always reachable opponents, so this term carries gradient even while the
     # refpool winrate is pinned near 0.
     tournament: bool = False
-    w_tour: float = 0.20            # tournament winrate weight (independent of w_pair)
+    w_tour: float = 0.30            # tournament winrate weight (independent of w_pair)
     tournament_k: int = 2           # intra-group opponents sampled per rollout
 
     # --- aesthetic scorer --------------------------------------------------

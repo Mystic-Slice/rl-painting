@@ -43,9 +43,7 @@ HARD HARNESS CONTRACT — ANY VIOLATION BREAKS THE RENDER
        push(), pop(), translate(), rotate(), scale()
    Never use brush.push, brush.pop, brush.translate, brush.rotate, or brush.scale.
 
-10. Every `brush.beginShape(...)` must have a matching
-    `brush.endShape(...)`. Every `brush.beginStroke(...)` must have a matching
-    `brush.endStroke(...)`.
+10. Every `brush.beginShape(...)` must have a matching `brush.endShape(...)`.
 
 ========================================================================
 AVAILABLE p5.brush TOOLBOX
@@ -60,17 +58,8 @@ STROKE
 WATERCOLOUR / WASH
   brush.fill(color, opacity)
   brush.noFill()
-  brush.wash(color, opacity)
-  brush.noWash()
   brush.fillBleed(strength, dir)       // strength 0..1, dir "out" or "in"
   brush.fillTexture(strength, border, scatter)
-
-HATCH / DRY MEDIA
-  brush.hatch(dist, angle, opts?)
-  brush.noHatch()
-  brush.hatchStyle(name, color, weight)
-  brush.mass(name, color, opts?)
-  brush.noMass()
 
 FIELDS AND FLOW
   brush.field(name)
@@ -91,18 +80,12 @@ SHAPES
   brush.beginShape(curvature?)
   brush.vertex(x, y, pressure?)
   brush.endShape(close?)
-  brush.beginStroke(type, x, y)
-  brush.move(angle, length, pressure)
-  brush.endStroke(angle?, pressure?)
 
 BRUSH NAMES
   "HB", "2B", "2H", "pen", "rotring", "marker", "charcoal",
   "cpencil", "crayon", "pastel", "spray"
 
-OPTIONAL ADVANCED METHODS
-  brush.add(name, params)              // procedural only; NEVER type "image"
-  brush.clip([x1,y1,x2,y2])
-  brush.noClip()
+Use ONLY the methods listed above. Any other brush.* call breaks the render.
 
 ========================================================================
 MINIMAL STRUCTURAL CONTRACT

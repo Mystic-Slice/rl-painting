@@ -21,13 +21,26 @@ prompt -> Qwen (policy on Tinker) --group of G rollouts--> G p5.brush sketches
 | term | where | signal |
 |---|---|---|
 | compile gate | `Env.step` | render fail / no-code / no stop-seq → reward = `r_fail` (−0.3), no judge spend |
+| blank gate | `Env.step` | flat/near-uniform render (`reward/imgcheck.py`, painted fraction < 0.02) → `r_blank` (−0.1), excluded from all judging |
 | length penalty | `Env.step` | 0 up to `len_free_tokens` (6000), linear to `−w_len` (−0.30) at `max_tokens` |
-| aesthetic | `compute_group_rewards` | one holistic VLM judge call/image → 0–10 → [0,1], weight `w_aesth` (0.35) |
-| pairwise | `compute_group_rewards` | winrate vs K refpool opponents, order-swapped, weight `w_pair` (0.45) |
-| tournament | `compute_group_rewards` | optional (`tournament=True`): winrate vs `tournament_k` compiled group-mates, weight `w_tour` (0.20, independent of `w_pair`) |
+| aesthetic | `compute_group_rewards` | one holistic VLM judge call/image → 0–10 → [0,1], weight `w_aesth` (0.35); prompt anchors the low end (blank=0, crude shapes 1–2, …) |
+| pairwise | `compute_group_rewards` | winrate vs K refpool opponents, order-swapped, weight `w_pair` (0.15) |
+| tournament | `compute_group_rewards` | optional (`tournament=True`): winrate vs `tournament_k` non-blank group-mates, weight `w_tour` (0.30, independent of `w_pair`) |
+
+Pairwise votes are **forced choice** (A or B, no ties — run 2's judge tied ~every
+intra-group pair, flattening the tournament to a constant 0.5) with an explicit
+dominance rule: an image that attempts the subject always beats a blank/near-empty
+canvas, however crude.
 
 `total = step_reward + group_reward`. All knobs: `reward/config.py` (`RewardConfig`),
 surfaced as `train_rl.py` / `PaintRLDatasetBuilder` fields.
+
+Run 2 (same collapse, slower) added: the blank gate (validated against run 2's own
+rollouts: 100% of the collapsed tail flagged, 0 false positives on references),
+no-tie judging with the dominance rule, low-end holistic anchors, w_pair 0.45→0.15
+(refpool winrate was 0.000 the whole run), w_tour 0.20→0.30, and a trimmed system
+prompt toolbox (wash/hatch/mass/beginStroke/clip/add removed — smaller error
+surface; fill family kept).
 
 Shaping notes (post-mortem of the first 9B run, which collapsed to blank canvases):
 `r_fail=-0.3` equals the worst possible success score so failing never beats

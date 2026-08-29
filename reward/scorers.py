@@ -46,8 +46,16 @@ HOLISTIC_SYSTEM = (
     "judgement: (1) subject recognisability, (2) painterly watercolour looseness "
     "(soft bleeding layered washes, NOT stiff outlines or muddy blobs), "
     "(3) composition and focal clarity, (4) colour harmony, (5) overall aesthetic "
-    "appeal. Most procedural attempts are mediocre; reserve 8+ for genuinely "
-    "accomplished paintings.\n\n"
+    "appeal.\n\n"
+    "Anchor the low end of your scale precisely — differences between weak "
+    "attempts matter:\n"
+    "- 0: blank canvas, a single flat shade, or a near-empty canvas with only a "
+    "stray mark or two. Painting SOMETHING always scores above painting nothing.\n"
+    "- 1-2: visible shapes or strokes, but the subject is hard to make out.\n"
+    "- 3-4: the subject is guessable; crude or sparse rendering.\n"
+    "- 5-6: subject clearly recognisable with some watercolour character.\n"
+    "- 7-8: recognisable subject, layered washes, coherent composition.\n"
+    "- 9-10: genuinely accomplished; reserve these.\n\n"
     "Respond with ONLY a JSON object, no prose, no code fence:\n"
     '{"score": <number 0-10, one decimal>, "feedback": "<one sentence>"}'
 )

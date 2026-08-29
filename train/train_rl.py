@@ -106,13 +106,14 @@ class CLIConfig:
     judge_model: str = "qwen/qwen3-vl-32b-instruct"
     judge_retries: int = 2               # extra attempts per judge call; still-failed calls score 0
     w_aesth: float = 0.35
-    w_pair: float = 0.45                 # refpool pairwise winrate weight
-    w_len: float = 0.30
+    w_pair: float = 0.20                 # refpool pairwise winrate weight (0.000 all of run 2 -> demoted)
+    w_len: float = 0.15
     len_free_tokens: int = 6000
     r_fail: float = -0.3                 # gate: equals the worst possible success score
+    r_blank: float = -0.1                # flat/near-uniform render: worse than any attempt, better than a fail
     render_timeout_ms: int = 45000
     tournament: bool = True             # intra-group pairwise tournament
-    w_tour: float = 0.20                 # tournament winrate weight (independent of w_pair)
+    w_tour: float = 0.30                 # tournament winrate weight (independent of w_pair)
     tournament_k: int = 2                # intra-group opponents per rollout
     n_test: int = 6
     refpool_root: str = DEFAULT_REFPOOL
@@ -192,6 +193,7 @@ async def cli_main(cli_config: CLIConfig):
         w_len=cli_config.w_len,
         len_free_tokens=cli_config.len_free_tokens,
         r_fail=cli_config.r_fail,
+        r_blank=cli_config.r_blank,
         render_timeout_ms=cli_config.render_timeout_ms,
         tournament=cli_config.tournament,
         w_tour=cli_config.w_tour,

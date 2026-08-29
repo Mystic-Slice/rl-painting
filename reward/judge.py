@@ -6,10 +6,13 @@ two watercolour paintings better depicts the requested scene, and reward the
 policy by its win-rate against a pool of reference images.
 
 Each (candidate, reference) pair is judged twice with the A/B order swapped to
-cancel position bias. win=1, tie=0.5, loss=0; a parse/API failure (after
-cfg.judge_retries retries inside achat) scores 0 plus an error metric — a
-neutral 0.5 fallback proved poisonous, out-scoring what degenerate images
-honestly earn. Calls fan out concurrently and are cost-tracked.
+cancel position bias. Forced choice: win=1, loss=0, NO ties (run 2's judge tied
+essentially every intra-group pair, flattening the tournament signal to a
+constant 0.5; for genuinely equal pairs the swapped votes average to ~0.5
+anyway). A parse/API failure (after cfg.judge_retries retries inside achat)
+scores 0 plus an error metric — a neutral 0.5 fallback proved poisonous,
+out-scoring what degenerate images honestly earn. Calls fan out concurrently
+and are cost-tracked.
 """
 
 from __future__ import annotations
@@ -28,25 +31,30 @@ PAIRWISE_SYSTEM = (
     "they are meant to depict. Decide which is the better watercolour painting of "
     "that subject, judging: subject recognisability (is it clearly the requested "
     "animal and scene?), watercolour character (soft layered washes, not stiff "
-    "outlines or muddy blobs), and composition. Reply with EXACTLY one token: "
-    "A, B, or TIE. No other text."
+    "outlines or muddy blobs), and composition.\n"
+    "RULES:\n"
+    "- An image that visibly attempts the subject — figures, shapes, strokes, any "
+    "composition — ALWAYS beats a blank canvas, a single flat shade, or a near-empty "
+    "canvas with only a stray mark or two, no matter how crude the attempt is.\n"
+    "- If both images attempt the subject, prefer the one that depicts it more "
+    "recognisably and with more genuine watercolour character.\n"
+    "- You MUST pick a winner. There are no ties.\n"
+    "Reply with EXACTLY one token: A or B. No other text."
 )
 
 
 def _parse_vote(text: str) -> str | None:
-    """Return 'A', 'B', 'TIE', or None (unparseable)."""
+    """Return 'A', 'B', or None (unparseable)."""
     if not text:
         return None
     t = text.strip().upper()
-    m = re.search(r"\b(TIE|A|B)\b", t)
+    m = re.search(r"\b(A|B)\b", t)
     if m:
         return m.group(1)
     if t.startswith("A"):
         return "A"
     if t.startswith("B"):
         return "B"
-    if "TIE" in t:
-        return "TIE"
     return None
 
 
@@ -74,8 +82,6 @@ async def _one_vote(candidate_png: str, reference_png: str, scene_prompt: str,
     vote = _parse_vote(content)
     if vote is None:
         return 0.0, True
-    if vote == "TIE":
-        return 0.5, False
     cand_letter = "A" if candidate_is_a else "B"
     return (1.0 if vote == cand_letter else 0.0), False
 
