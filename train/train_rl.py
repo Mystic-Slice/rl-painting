@@ -36,7 +36,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from tinker_cookbook import checkpoint_utils, cli_utils, hyperparam_utils  # noqa: E402
-from tinker_cookbook.rl.train import Config, main  # noqa: E402
+from tinker_cookbook.rl.train import Config, KLReferenceConfig, main  # noqa: E402
 
 from reward.orclient import close_orclient  # noqa: E402
 from reward.render_bridge import close_render_bridge  # noqa: E402
@@ -80,10 +80,12 @@ class CLIConfig:
     # model / run
     model_name: str = "Qwen/Qwen3.5-9B"
     lora_rank: int = 32
-    # Thinking disabled by default: with thinking on, reasoning ate most of the
-    # 8k token budget, a third of rollouts truncated (-> gate fail), and the run
-    # collapsed to trivial sketches. Pass renderer_name=qwen3_5 to re-enable.
-    renderer_name: str | None = "qwen3_5_disable_thinking"
+    # Thinking re-enabled after run 3 (run 1, the only thinking-on run, had by far
+    # the best aesthetic; the run-3 collapse was a buggy-pattern lock-in that a
+    # reasoning pass can catch). NOTE: with the cap still at 8k, long thinking can
+    # truncate (-> r_fail); watch env/all/format_ok.
+    # Pass renderer_name=qwen3_5_disable_thinking to turn thinking back off.
+    renderer_name: str | None = "qwen3_5"
     load_checkpoint_path: str | None = None
     log_path: str | None = None
     seed: int = 0
@@ -91,11 +93,16 @@ class CLIConfig:
     # training hyperparameters
     group_size: int = 8
     groups_per_batch: int = 8
-    learning_rate: float | None = None   # None -> hyperparam_utils.get_lr(model)
+    # ~1/3 of hyperparam_utils.get_lr's 4.7e-4: every run at the default LR showed
+    # wholesale policy shifts within 5-10 steps (run 3: one buggy code pattern took
+    # over 48/64 rollouts in ~3 steps). None -> get_lr(model) default.
+    learning_rate: float | None = 1.5e-4
     max_tokens: int = 8192
     temperature: float = 1.0
     max_steps: int | None = 50
     num_substeps: int = 1
+    # Small KL-to-base anchor against mode collapse / competence loss (0 disables).
+    kl_penalty_coef: float = 0.01
 
     # reward knobs
     scorer: str = "holistic"             # "holistic" | "null"
@@ -218,6 +225,9 @@ async def cli_main(cli_config: CLIConfig):
         eval_every=cli_config.eval_every,
         save_every=cli_config.save_every,
         remove_constant_reward_groups=True,
+        kl_penalty_coef=cli_config.kl_penalty_coef,
+        kl_reference_config=(KLReferenceConfig(base_model=cli_config.model_name)
+                             if cli_config.kl_penalty_coef > 0 else None),
         rollout_error_tolerance=cli_config.rollout_error_tolerance,
         wandb_project=cli_config.wandb_project,
         wandb_name=cli_config.wandb_name or run_name,

@@ -35,6 +35,15 @@ canvas, however crude.
 `total = step_reward + group_reward`. All knobs: `reward/config.py` (`RewardConfig`),
 surfaced as `train_rl.py` / `PaintRLDatasetBuilder` fields.
 
+Run 3 (blank gate worked, best aesthetic yet, then a NEW collapse: the policy
+locked onto one buggy code pattern — `Brush "color" not found` in 48/64 rollouts —
+and compile crashed) added: thinking back ON (`renderer_name=qwen3_5`; run 1 with
+thinking had ~2× the aesthetic of any thinking-off run), default LR cut to 1.5e-4
+(~1/3 of get_lr; lock-in happened within ~3 steps at 4.7e-4), and a small KL
+anchor to the base model (`kl_penalty_coef=0.01`). Token budget deliberately
+unchanged (8k cap, 6000 free) — watch `env/all/format_ok` for thinking-driven
+truncation.
+
 Run 2 (same collapse, slower) added: the blank gate (validated against run 2's own
 rollouts: 100% of the collapsed tail flagged, 0 false positives on references),
 no-tie judging with the dominance rule, low-end holistic anchors, w_pair 0.45→0.15
